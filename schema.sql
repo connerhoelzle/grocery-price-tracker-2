@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS product;
 DROP TABLE IF EXISTS receipt;
 DROP TABLE IF EXISTS web_session;
 DROP TABLE IF EXISTS line_item;
+DROP VIEW IF EXISTS amount_spent_by_store;
+DROP VIEW IF EXISTS number_of_products_purchased;
 
 CREATE TABLE store (
     id INTEGER PRIMARY KEY,
@@ -53,3 +55,17 @@ CREATE TABLE line_item (
     FOREIGN KEY (web_session_id) REFERENCES web_session(id),
     FOREIGN KEY (product_id) REFERENCES product(id)
 );
+
+CREATE VIEW amount_spent_by_store AS 
+SELECT store.name, store.location, SUM(receipt.total_price) 
+FROM store LEFT JOIN receipt ON store.id = receipt.store_id 
+GROUP BY store.id
+;
+
+
+CREATE VIEW number_of_products_purchased AS 
+SELECT product.name, product.brand, product.size, product.unit, COUNT(line_item.product_id) AS number_of_times_purchased 
+FROM product LEFT JOIN line_item ON product.id = line_item.product_id 
+GROUP BY product.id 
+ORDER BY number_of_times_purchased DESC, product.name
+;
